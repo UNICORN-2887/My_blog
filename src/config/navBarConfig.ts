@@ -106,8 +106,8 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 				url: "https://docs-firefly.cuteleaf.cn",
 				external: true,
 				icon: "material-symbols:docs",
-				},
-			],
+			},
+		],
 	});
 
 	// 文档链接
