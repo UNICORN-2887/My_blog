@@ -3058,7 +3058,23 @@ function api_findNearestShip(shipName, fromName) {
 function executeAPICall(fnName, args) {
   try {
     var a = JSON.parse(args);
-    if (fnName === 'findPath') return JSON.stringify(api_findPath(a.from, a.to, a.mode||'shortest'));
+    if (fnName === 'findPath') {
+      var result = api_findPath(a.from, a.to, a.mode||'shortest');
+      // 自动在地图上绘制路径
+      if (result && result.nodeIds && result.nodeIds.length > 0) {
+        state.startNodeId = result.nodeIds[0];
+        state.endNodeId = result.nodeIds[result.nodeIds.length - 1];
+        state.pathNodeIds = result.nodeIds;
+        state.pathEdgeIds = [];
+        for (var pi = 0; pi < result.nodeIds.length - 1; pi++) {
+          state.pathEdgeIds.push(edgeKey(result.nodeIds[pi], result.nodeIds[pi+1]));
+        }
+        if (state.mode !== 'map') { state.mode = 'map'; state.mapSubMode = 'nav'; }
+        render();
+        updatePathDisplay();
+      }
+      return JSON.stringify(result);
+    }
     if (fnName === 'searchNPC') return JSON.stringify(api_searchNPC(a.name));
     if (fnName === 'searchProduct') return JSON.stringify(api_searchProduct(a.name));
     if (fnName === 'findNearestShip') return JSON.stringify(api_findNearestShip(a.shipName, a.from));
