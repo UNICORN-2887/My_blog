@@ -102,6 +102,12 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 				icon: "material-symbols:rocket",
 			},
 			{
+				name: "星图配置",
+				url: "/spacerpg4/kb_config.html",
+				external: true,
+				icon: "material-symbols:settings",
+			},
+			{
 				name: "Firefly文档",
 				url: "https://docs-firefly.cuteleaf.cn",
 				external: true,
