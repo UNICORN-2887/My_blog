@@ -96,18 +96,18 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 				icon: "fa7-brands:qq",
 			},
 			{
-				{
-				    name: "SpaceRPG4星图",
-				    url: "/spacerpg4/spacerpg4_map.html",
-				    external: false,
-				    icon: "material-symbols:rocket",
+				name: "SpaceRPG4星图",
+					url: "/spacerpg4/spacerpg4_map.html",
+					external: true,
+					icon: "material-symbols:rocket",
 				},
-				name: "Firefly文档",
-				url: "https://docs-firefly.cuteleaf.cn",
-				external: true,
-				icon: "material-symbols:docs",
-			},
-		],
+				{
+					name: "Firefly文档",
+					url: "https://docs-firefly.cuteleaf.cn",
+					external: true,
+					icon: "material-symbols:docs",
+				},
+			],
 	});
 
 	// 文档链接
