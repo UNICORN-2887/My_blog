@@ -367,7 +367,7 @@ table.keys td:first-child{white-space:nowrap;width:180px}
 <p>A: 调整武器 ROI 框到武器第一格正上方，可在标定页面微调 Tol/Thr 参数。</p>
 
 <h4>Q: 如何在其他地图使用？</h4>
-<p>A: 需要先用光流法建图 (<code>map_stitcher.py</code>)→ 二值标定可达区 (<code>reachability_map.py</code>)→ 标记火堆坐标 → 录入途径点。详细教程即将推出。</p>
+<p>A: 查看 <a href="#advanced">进阶教程</a>：建图 → 可达区标定 → 火堆/门标记 → 导航验证。</p>
 
 <h4>Q: 能不能不装 OBS？</h4>
 <p>A: 目前不能。OBS 虚拟摄像头是唯一支持后台画面采集且不影响游戏性能的方案。</p>
@@ -375,15 +375,168 @@ table.keys td:first-child{white-space:nowrap;width:180px}
 
 <!-- ═══════════════════════════════════════════ -->
 <section id="advanced">
-<h2>🔬 进阶 <span class="badge badge-wip">开发中</span></h2>
-<p>以下功能文档即将推出：</p>
+<h2>🔬 进阶：为新地图建图</h2>
+<p>以下教程教你如何为一个空白地图建立完整的大地图 + 可达区 + 火堆坐标，使导航脚本可以在上面运行。</p>
+
+<div class="info"><strong>前提</strong> — 已完成 <a href="#install">环境安装</a> 和 <a href="#config">配置标定</a>。OBS 虚拟摄像头必须开启。</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<h3>完整工作流</h3>
+<div class="step"><div class="step-num">1</div><div class="step-body">
+ <h4>光流建图</h4>
+ <p><code>map_stitcher.py</code> → 生成 <code>map_output.jpg</code> (大地图)</p>
+</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body">
+ <h4>二值标定</h4>
+ <p><code>reachability_map.py</code> → 生成可达图 + 火堆 + 门标记</p>
+</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body">
+ <h4>导航验证</h4>
+ <p><code>navigator.py</code> → 设起终点跑一遍 → 调试修正 → 完成</p>
+</div></div>
+
+<!-- ═══════════════════════════════════════════ -->
+<h3>🗺 第一步：光流法建图</h3>
+
+<h4>启动</h4>
+<pre><code>python map_stitcher.py -c 1 -o my_map.jpg</code></pre>
+
+<table>
+ <tr><th>参数</th><th>默认</th><th>说明</th></tr>
+ <tr><td><code>-c / --camera</code></td><td>1</td><td>OBS 虚拟摄像头 ID</td></tr>
+ <tr><td><code>-m / --min-move</code></td><td>25</td><td>最小位移 (px)，小于此值不拼接</td></tr>
+ <tr><td><code>-o / --output</code></td><td>map_output.jpg</td><td>输出文件名</td></tr>
+ <tr><td><code>--crop</code></td><td>无</td><td>裁剪配置 JSON 文件</td></tr>
+</table>
+
+<h4>操作</h4>
+<ol>
+ <li>确保 OBS 采集到 DeadMaze 游戏画面</li>
+ <li>运行上述命令，会弹出两个窗口：<strong>OBS 画面</strong> + <strong>拼接地图</strong></li>
+ <li>按 <kbd>T</kbd> 显示/隐藏 <strong>裁剪框</strong>（绿色矩形）</li>
+ <li>用 <kbd>IJKL</kbd> 拖动裁剪框，<kbd>+/-</kbd> 缩放边距，排除 HUD 和工具栏</li>
+ <li>按 <kbd>A</kbd> 开启<strong>自动拼接</strong>模式</li>
+ <li>在游戏中<strong>绕地图边界走一圈</strong>，然后蛇形填充内部区域</li>
+ <li>按 <kbd>S</kbd> 保存地图 + 裁剪配置</li>
+ <li>按 <kbd>Q</kbd> 退出</li>
+</ol>
+
+<h4>键位速查</h4>
+<table class="keys">
+ <tr><td><kbd>A</kbd></td><td>切换自动/手动拼接</td></tr>
+ <tr><td><kbd>C</kbd></td><td>手动拼接当前帧</td></tr>
+ <tr><td><kbd>T</kbd></td><td>显示/隐藏裁剪框</td></tr>
+ <tr><td><kbd>IJKL</kbd></td><td>微调裁剪框位置</td></tr>
+ <tr><td><kbd>+ / -</kbd></td><td>缩放裁剪框边距</td></tr>
+ <tr><td><kbd>S</kbd></td><td>保存地图 + 裁剪配置</td></tr>
+ <tr><td><kbd>R</kbd></td><td>重置地图 (清空重新开始)</td></tr>
+ <tr><td><kbd>Q</kbd></td><td>退出</td></tr>
+</table>
+
+<h4>技巧</h4>
 <ul>
- <li>🗺️ <strong>自建地图</strong> — map_stitcher.py 光流法拼接大地图</li>
- <li>🎨 <strong>可达区标定</strong> — reachability_map.py 涂刷/描边/门标记</li>
- <li>📍 <strong>途径点编辑</strong> — 如何为不同地图录入巡逻路线</li>
- <li>🏕️ <strong>火堆标定</strong> — YOLO 火堆检测 + 点击偏移校准</li>
- <li>🤖 <strong>YOLO 再训练</strong> — 如何在其他地图训练自定义模型</li>
+ <li><strong>走边界</strong> — 先贴墙走一圈建立轮廓，再蛇形走内部</li>
+ <li><strong>慢速移动</strong> — 跑太快 ORB 特征匹配容易丢失，建议走</li>
+ <li><strong>室内区域</strong> — 光照变化大的地方多走几遍，增加重叠帧</li>
+ <li><strong>自动模式</strong> — A 键开启后，只有位移 ≥ min_movement 时才拼接，可以边玩边建</li>
+ <li><strong>裁剪框</strong> — 一定要调整，否则 HUD 上的数字和 UI 会被拼进地图</li>
 </ul>
+
+<h4>输出</h4>
+<table>
+ <tr><th>文件</th><th>说明</th></tr>
+ <tr><td><code>my_map.jpg</code></td><td>拼接好的大地图 (约 20000×10000 像素)</td></tr>
+ <tr><td><code>map_stitcher_crop.json</code></td><td>裁剪框配置 (下次建图自动加载)</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════ -->
+<h3>🎨 第二步：可达区二值标定</h3>
+
+<h4>启动</h4>
+<pre><code>python reachability_map.py my_map.jpg -o my_map_reachable.png</code></pre>
+
+<table>
+ <tr><th>参数</th><th>说明</th></tr>
+ <tr><td><code>my_map.jpg</code></td><td>第一步生成的地图文件</td></tr>
+ <tr><td><code>-o / --output</code></td><td>输出可达图文件名 (默认 原图名_reachable.png)</td></tr>
+</table>
+
+<h4>三种工作模式</h4>
+
+<div class="step"><div class="step-num">🖌</div><div class="step-body">
+ <h4>涂刷模式 (默认)</h4>
+ <p>鼠标 <strong>左键涂白</strong> (可达) | <strong>右键涂黑</strong> (不可达)<br>
+ 数字键 <kbd>1</kbd>-<kbd>4</kbd> 切换画笔大小: 4 / 12 / 30 / 80 像素<br>
+ <strong>用法</strong>: 修补细节，比如墙壁边缘、小障碍物、狭窄通道</p>
+</div></div>
+
+<div class="step"><div class="step-num">📐</div><div class="step-body">
+ <h4>描边模式 (P 键)</h4>
+ <p>按 <kbd>P</kbd> 进入 → 点击绘制多边形顶点 → 按 <kbd>回车</kbd> 填充<br>
+ 颜色按 <kbd>F</kbd> 切换: <strong>白</strong>(可达) / <strong>黑</strong>(不可达)<br>
+ <strong>用法</strong>: 快速标记大片不可达区域 (建筑、水域、悬崖)</p>
+</div></div>
+
+<div class="step"><div class="step-num">🚪</div><div class="step-body">
+ <h4>门标记模式 (D 键)</h4>
+ <p>按 <kbd>D</kbd> 进入 → 点击门的位置标记 → <kbd>1</kbd> 或 <kbd>2</kbd> 设置方向<br>
+ <kbd>1</kbd> = 左上↔右下 type | <kbd>2</kbd> = 右上↔左下 type<br>
+ <strong>用法</strong>: 标记需要通过交互才能打开的门</p>
+</div></div>
+
+<h4>火堆标定</h4>
+<p><strong>右键点击</strong> 火堆在地图上的位置 → 自动保存到 <code>xxx_campfire.json</code></p>
+
+<h4>HSV 初稿 (C 键)</h4>
+<p>按 <kbd>C</kbd> 自动用 HSV 颜色分割生成初稿，减少手工涂刷工作量。结果可能不完美，需要手动修边。</p>
+
+<h4>键位速查</h4>
+<table class="keys">
+ <tr><td><kbd>左键</kbd></td><td>涂白 (可达)</td></tr>
+ <tr><td><kbd>右键</kbd></td><td>涂黑 (不可达) / 标记火堆</td></tr>
+ <tr><td><kbd>P / M</kbd></td><td>进入/退出 描边模式</td></tr>
+ <tr><td><kbd>D</kbd></td><td>进入/退出 门标记模式</td></tr>
+ <tr><td><kbd>F</kbd></td><td>描边模式：切换填充颜色</td></tr>
+ <tr><td><kbd>回车</kbd></td><td>描边模式：确认并填充多边形</td></tr>
+ <tr><td><kbd>1-4</kbd></td><td>画笔大小 (4/12/30/80px)</td></tr>
+ <tr><td><kbd>C</kbd></td><td>HSV 自动分割初稿</td></tr>
+ <tr><td><kbd>T</kbd></td><td>切换显示模式 (黑底/白底)</td></tr>
+ <tr><td><kbd>IJKL</kbd></td><td>平移视图</td></tr>
+ <tr><td><kbd>+ / -</kbd></td><td>缩放视图</td></tr>
+ <tr><td><kbd>S</kbd></td><td>保存</td></tr>
+ <tr><td><kbd>R</kbd></td><td>重置 (重新生成外框)</td></tr>
+ <tr><td><kbd>Q</kbd></td><td>保存 + 退出</td></tr>
+</table>
+
+<h4>输出</h4>
+<table>
+ <tr><th>文件</th><th>内容</th><th>格式</th></tr>
+ <tr><td><code>xxx_reachable.png</code></td><td>二值可达图</td><td>0=不可达(黑), 255=可达(白)</td></tr>
+ <tr><td><code>xxx_campfire.json</code></td><td>火堆坐标</td><td><code>[x, y]</code></td></tr>
+ <tr><td><code>xxx_doors.json</code></td><td>门标记列表</td><td><code>[[x, y, type], ...]</code></td></tr>
+</table>
+
+<div class="warn"><strong>⚠ 路径可通性</strong> — 标定时请在通道中间留足宽度。标得太窄 A* 寻路可能找不到路径。标得太宽角色可能撞墙。</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<h3>📍 第三步：导航验证</h3>
+
+<h4>启动新地图</h4>
+<pre><code>python navigator.py my_map_reachable.png --map my_map.jpg</code></pre>
+
+<h4>验证步骤</h4>
+<ol>
+ <li>在地图上<strong>左键点击</strong>设定起点 (角色当前位置)</li>
+ <li><strong>右键点击</strong>设定终点 → 自动 A* 规划路径 (蓝色线)</li>
+ <li>如需多个巡逻点: 连续右键点击 → <kbd>M</kbd> 循环巡逻</li>
+ <li><kbd>Enter</kbd> 开始导航 → 观察角色是否按预期行走</li>
+ <li>如果偏离/卡住 → 回到第二步修正可达区 → 重复验证</li>
+</ol>
+
+<h4>途径点 & 巡逻</h4>
+<p>设置多个途径点后，导航器会在各点之间循环巡逻。每个途径点到达后进入 <strong>战斗模式</strong> (YOLO 检测僵尸)，清理完毕前往下一个。</p>
+
+<div class="info"><strong>💡 迭代流程</strong> — 建图 → 标定 → 验证 → 修正标定 → 再验证。通常需要 2-3 轮才能达到理想效果。</div>
 </section>
 
 <div class="footer">
