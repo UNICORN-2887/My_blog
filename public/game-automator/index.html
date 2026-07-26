@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>game-automator - 通用游戏自动化框架</title>
+<style>
+:root{--bg:#0a0e17;--fg:#111827;--bd:#1e293b;--tx:#cbd5e1;--dim:#64748b;--br:#f1f5f9;--ac:#3b82f6;--gr:#10b981;--r:6px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--tx);line-height:1.7;display:flex}
+nav{width:210px;background:var(--fg);border-right:1px solid var(--bd);position:fixed;top:0;left:0;bottom:0;overflow-y:auto;padding:20px 0}
+nav .logo{padding:0 18px 16px;border-bottom:1px solid var(--bd);margin-bottom:10px}
+nav .logo h1{font-size:17px;color:var(--br)} nav .logo span{color:var(--ac)}
+nav a{display:block;padding:6px 18px;color:var(--dim);text-decoration:none;font-size:13px;border-left:2px solid transparent}
+nav a:hover{color:var(--br);border-left-color:var(--ac)}
+main{margin-left:210px;max-width:860px;padding:40px 48px 80px}
+section{margin-bottom:40px}
+h2{font-size:22px;color:var(--br);margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid var(--bd)}
+h3{font-size:17px;color:var(--br);margin:18px 0 8px}
+p{margin:6px 0} a{color:var(--ac)} code{background:#1e293b;padding:2px 6px;border-radius:3px;font-size:13px}
+pre{background:#0f172a;border:1px solid var(--bd);border-radius:var(--r);padding:14px 16px;overflow-x:auto;margin:10px 0}
+pre code{background:none;padding:0;font-size:12px;line-height:1.6}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+th,td{padding:8px 12px;border-bottom:1px solid var(--bd);text-align:left}
+th{color:var(--dim);font-size:11px;text-transform:uppercase}
+.btn{display:inline-block;padding:10px 18px;border-radius:var(--r);font-weight:600;text-decoration:none;font-size:14px}
+.btn-pri{background:var(--ac);color:#fff}.btn-sec{background:var(--fg);color:var(--tx);border:1px solid var(--bd)}
+</style>
+</head>
+<body>
+<nav>
+ <div class="logo"><h1><span>game</span>-automator</h1></div>
+ <a href="#intro">简介</a>
+ <a href="#quickstart">快速开始</a>
+ <a href="#api">API 参考</a>
+ <a href="#actions">动作映射</a>
+ <a href="#example">完整示例</a>
+ <a href="#install">安装</a>
+</nav>
+<main>
+
+<section id="intro">
+ <h2>简介</h2>
+ <p><strong>game-automator</strong> 是一个通用游戏自动化框架。不绑定任何特定游戏——你只需实现定位和按键映射，框架负责地图拼接、可达区编辑、A* 寻路和导航控制。</p>
+ <p>已用于 <a href="/deadmaze/">DeadMaze</a> 项目的完整自动化闭环。</p>
+ <div style="margin:16px 0">
+  <a href="https://github.com/UNICORN-2887/-/tree/master/General_Generator" class="btn btn-pri">GitHub</a>
+  <a href="https://github.com/UNICORN-2887/-/archive/refs/heads/master.zip" class="btn btn-sec" style="margin-left:8px">Download ZIP</a>
+ </div>
+</section>
+
+<section id="quickstart">
+ <h2>3 分钟接入</h2>
+ <pre><code>from game_automator import GameAutomator
+
+# 1. 初始化 (地图 + 可达图)
+auto = GameAutomator("map.jpg", "reachable.png")
+
+# 2. 规划路径
+path = auto.set_route((5000, 6000), (8000, 4000))
+print(f"路径: {len(path)} 个点")
+
+# 3. 导航循环
+while not auto.arrived:
+    pos = get_position()          # 你的定位
+    action = auto.step(pos)       # 返回 'MOVE_NE' / 'MOVE_S' ...
+    if action:
+        press_keys(action)        # 你的按键映射</code></pre>
+</section>
+
+<section id="api">
+ <h2>API 参考</h2>
+ <h3>构造函数</h3>
+ <pre><code>GameAutomator(
+    map_path,           # str: 地图 JPEG 路径
+    reachable_path,     # str: 可达图 PNG 路径
+    waypoint_reach=25,  # int: 路标到达判定 (px)
+    goal_reach=100,     # int: 终点到达判定 (px)
+    lookahead=90,       # int: 前向路标距离 (px)
+    shrink=80           # int: 边缘缩进 (px)
+)</code></pre>
+ <h3>方法</h3>
+ <table>
+  <tr><th>方法</th><th>参数</th><th>返回</th><th>说明</th></tr>
+  <tr><td><code>set_route(start, goal)</code></td><td>(x,y), (x,y)</td><td>List[(x,y)]</td><td>规划路径, 返回完整路径点</td></tr>
+  <tr><td><code>step(pos)</code></td><td>(x,y)</td><td>str or None</td><td>传入位置, 返回动作名; None=到达</td></tr>
+  <tr><td><code>cancel()</code></td><td>-</td><td>-</td><td>取消导航</td></tr>
+ </table>
+ <h3>属性</h3>
+ <table>
+  <tr><th>属性</th><th>类型</th><th>说明</th></tr>
+  <tr><td><code>path</code></td><td>List[(x,y)]</td><td>完整路径点列表</td></tr>
+  <tr><td><code>current_waypoint</code></td><td>(x,y) or None</td><td>当前目标路标</td></tr>
+  <tr><td><code>arrived</code></td><td>bool</td><td>是否已到达终点</td></tr>
+ </table>
+</section>
+
+<section id="actions">
+ <h2>动作映射</h2>
+ <p><code>step()</code> 返回字符串动作名。你需要映射到游戏按键：</p>
+ <table>
+  <tr><th>动作名</th><th>方向</th><th>DeadMaze按键</th></tr>
+  <tr><td><code>MOVE_N</code></td><td>北/上</td><td>W</td></tr>
+  <tr><td><code>MOVE_S</code></td><td>南/下</td><td>S</td></tr>
+  <tr><td><code>MOVE_W</code></td><td>西/左</td><td>A</td></tr>
+  <tr><td><code>MOVE_E</code></td><td>东/右</td><td>D</td></tr>
+  <tr><td><code>MOVE_NE</code></td><td>东北</td><td>W + D</td></tr>
+  <tr><td><code>MOVE_NW</code></td><td>西北</td><td>W + A</td></tr>
+  <tr><td><code>MOVE_SE</code></td><td>东南</td><td>S + D</td></tr>
+  <tr><td><code>MOVE_SW</code></td><td>西南</td><td>S + A</td></tr>
+ </table>
+ <pre><code># 映射示例
+ACT_KEYS = {
+    'MOVE_N': ['W'], 'MOVE_S': ['S'], 'MOVE_W': ['A'], 'MOVE_E': ['D'],
+    'MOVE_NE': ['W','D'], 'MOVE_NW': ['W','A'],
+    'MOVE_SE': ['S','D'], 'MOVE_SW': ['S','A'],
+}</code></pre>
+</section>
+
+<section id="example">
+ <h2>完整示例: DeadMaze</h2>
+ <pre><code>from game_automator import GameAutomator
+from game_controller import DeadMazeController  # DeadMaze 后台操控
+from map_tracker import Tracker                  # DeadMaze ORB 追踪
+
+# 初始化
+auto = GameAutomator("map.jpg", "reachable.png")
+tracker = Tracker("map.jpg", camera_id=1)
+ctrl = DeadMazeController()
+ctrl.find_window()
+
+# 设定起点 (用户在地图上点击)
+start = (10295, 6640)
+tracker.last_position = start
+tracker.need_click = False
+
+# 规划
+goal = (12489, 6231)
+auto.set_route(start, goal)
+
+# 导航循环
+while not auto.arrived:
+    tracker.track()
+    pos = tracker.last_position
+    if not pos: continue
+
+    action = auto.step(pos)          # 框架 API
+    if action is None:
+        print("到达!"); break
+
+    keys = ACT_KEYS.get(action, ['W'])
+    # 先释放不需要的键
+    for name in ['W','A','S','D']:
+        if name not in keys:
+            ctrl.key_up(getattr(ctrl, f'VK_{name}'))
+    # 按下需要的键
+    for k in keys:
+        ctrl.key_down(getattr(ctrl, f'VK_{k}'))
+    time.sleep(0.5)
+    for k in keys:
+        ctrl.key_up(getattr(ctrl, f'VK_{k}'))</code></pre>
+ <p>完整可运行代码见 GitHub: <code>examples/deadmaze/test_full.py</code></p>
+</section>
+
+<section id="install">
+ <h2>安装 & 目录</h2>
+ <pre><code>cd General_Generator
+pip install -e .</code></pre>
+ <pre><code>game_automator/
+├── automator.py    # GameAutomator 一键封装
+├── capture/        # OBS/MSS/ADB 画面采集
+├── stitching/      # MapStitcher 光流建图
+├── mapping/        # Pathfinder A* + PositionTracker 光流
+├── navigation/     # Navigator + REST API
+├── calibration/    # CalibrationServer 标定网页
+├── driver/         # Actions + AbstractDriver
+└── server.py       # CLI: serve / stitch / calibrate</code></pre>
+</section>
+
+</main>
+</body>
+</html>
