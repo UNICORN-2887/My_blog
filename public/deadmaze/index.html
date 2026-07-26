@@ -245,7 +245,8 @@ table.keys td:first-child{white-space:nowrap;width:180px}
 <h2>🗺 导航使用</h2>
 
 <h3>启动</h3>
-<pre><code>python navigator.py map_output_reachable.png --map map_output.jpg
+<pre><code>python navigator.py MazonAcademy_reachable.png --map MazonAcademy.jpg
+# 如果建了新地图: python navigator.py MyMap_reachable.png --map MyMap.jpg
 # 或双击 run_navigator.bat</code></pre>
 
 <h3>操作键位</h3>
@@ -468,13 +469,14 @@ table.keys td:first-child{white-space:nowrap;width:180px}
 <h3>🗺 第一步：光流法建图</h3>
 
 <h4>启动</h4>
-<pre><code>python map_stitcher.py -c 1 -o my_map.jpg</code></pre>
+<pre><code># 用地图名命名，避免覆盖已有地图
+python map_stitcher.py -c 1 -o MyNewMap.jpg</code></pre>
 
 <table>
  <tr><th>参数</th><th>默认</th><th>说明</th></tr>
  <tr><td><code>-c / --camera</code></td><td>1</td><td>OBS 虚拟摄像头 ID</td></tr>
  <tr><td><code>-m / --min-move</code></td><td>25</td><td>最小位移 (px)，小于此值不拼接</td></tr>
- <tr><td><code>-o / --output</code></td><td>map_output.jpg</td><td>输出文件名</td></tr>
+ <tr><td><code>-o / --output</code></td><td>map_output.jpg</td><td>输出文件名 (建议用地图名)</td></tr>
  <tr><td><code>--crop</code></td><td>无</td><td>裁剪配置 JSON 文件</td></tr>
 </table>
 
@@ -514,7 +516,7 @@ table.keys td:first-child{white-space:nowrap;width:180px}
 <h4>输出</h4>
 <table>
  <tr><th>文件</th><th>说明</th></tr>
- <tr><td><code>my_map.jpg</code></td><td>拼接好的大地图 (约 20000×10000 像素)</td></tr>
+ <tr><td><code>MyNewMap.jpg</code></td><td>拼接好的大地图 (约 20000×10000 像素)</td></tr>
  <tr><td><code>map_stitcher_crop.json</code></td><td>裁剪框配置 (下次建图自动加载)</td></tr>
 </table>
 
@@ -522,12 +524,12 @@ table.keys td:first-child{white-space:nowrap;width:180px}
 <h3>🎨 第二步：可达区二值标定</h3>
 
 <h4>启动</h4>
-<pre><code>python reachability_map.py my_map.jpg -o my_map_reachable.png</code></pre>
+<pre><code>python reachability_map.py MyNewMap.jpg -o MyNewMap_reachable.png</code></pre>
 
 <table>
  <tr><th>参数</th><th>说明</th></tr>
- <tr><td><code>my_map.jpg</code></td><td>第一步生成的地图文件</td></tr>
- <tr><td><code>-o / --output</code></td><td>输出可达图文件名 (默认 原图名_reachable.png)</td></tr>
+ <tr><td><code>MyNewMap.jpg</code></td><td>第一步生成的地图文件</td></tr>
+ <tr><td><code>-o / --output</code></td><td>输出可达图文件名 (建议 地图名_reachable.png)</td></tr>
 </table>
 
 <h4>三种工作模式</h4>
@@ -591,7 +593,7 @@ table.keys td:first-child{white-space:nowrap;width:180px}
 <h3>📍 第三步：导航验证</h3>
 
 <h4>启动新地图</h4>
-<pre><code>python navigator.py my_map_reachable.png --map my_map.jpg</code></pre>
+<pre><code>python navigator.py MyNewMap_reachable.png --map MyNewMap.jpg</code></pre>
 
 <h4>验证步骤</h4>
 <ol>
