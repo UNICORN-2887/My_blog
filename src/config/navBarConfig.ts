@@ -108,6 +108,18 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 				icon: "material-symbols:settings",
 			},
 			{
+				name: "DeadMaze自动化",
+				url: "/deadmaze/",
+				external: true,
+				icon: "material-symbols:swords",
+			},
+			{
+				name: "光流建图寻路框架",
+				url: "/game-automator/",
+				external: true,
+				icon: "material-symbols:route",
+			},
+			{
 				name: "Firefly文档",
 				url: "https://docs-firefly.cuteleaf.cn",
 				external: true,
