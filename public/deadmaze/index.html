@@ -189,7 +189,16 @@ table.keys td:first-child{white-space:nowrap;width:180px}
  <li>菜单 → 工具 → <strong>虚拟摄像头</strong> → 启动</li>
  <li>确保虚拟摄像头输出分辨率设为 <strong>1920×1080</strong></li>
 </ol>
-<div class="warn"><strong>⚠ 重要</strong> — OBS 虚拟摄像头必须保持开启状态，导航脚本才能读取画面。</div>
+
+<h4>OBS 场景配置（重要）</h4>
+<p>建图和导航需要<strong>不同的画幅范围</strong>，项目提供了两个场景配置文件：</p>
+<div class="warn"><strong>📁 OBS_profiles/</strong> 目录下有两个场景 JSON 文件，导入后自动调整 DeadMaze 画幅。</div>
+<ol>
+ <li>OBS 菜单 → <strong>场景集合</strong> → <strong>导入</strong></li>
+ <li>选择 <code>OBS_profiles/建图采集器.json</code> → 画幅自动调整为建图模式（裁剪HUD，保留游戏世界）</li>
+ <li>建图完成后，再次导入 <code>OBS_profiles/DeadMaze场景.json</code> → 切换为导航战斗模式（完整画面，用于OCR和YOLO）</li>
+</ol>
+<p>⚠️ <strong>两个场景不能混用</strong>：建图模式裁剪掉了状态栏和HUD（避免拼进地图），导航模式需要完整画面读取OCR。</p>
 
 <h3>YOLO 模型</h3>
 <p>确保 <code>AImaneuver/runs/detect/deadmaze_combat/weights/best.pt</code> 存在。训练好的模型已包含在项目中。</p>
