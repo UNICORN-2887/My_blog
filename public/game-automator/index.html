@@ -50,22 +50,31 @@ th{color:var(--dim);font-size:11px;text-transform:uppercase}
 </section>
 
 <section id="quickstart">
- <h2>3 分钟接入</h2>
- <pre><code>from game_automator import GameAutomator
+ <h2>快速开始</h2>
+ <div style="background:var(--fg);border:1px solid var(--bd);border-radius:8px;padding:16px;margin:12px 0">
+  <strong>📥 第一步：下载</strong>
+  <p style="margin:4px 0;color:var(--dim)">从 GitHub 下载整个项目 ZIP，解压后进入 <code>General_Generator/</code> 文件夹——框架就在这里。</p>
+  <p style="margin:4px 0;color:var(--dim)">其他文件夹（DeadMaze 主项目、截图等）是演示用例，<strong>框架本身不需要它们</strong>。</p>
+ </div>
+ <div style="background:var(--fg);border:1px solid var(--bd);border-radius:8px;padding:16px;margin:12px 0">
+  <strong>⚙️ 第二步：安装</strong>
+  <pre style="margin:6px 0"><code>cd General_Generator
+pip install -e .</code></pre>
+  <p style="color:var(--dim)">自动安装 Python 依赖，约 1-2 分钟。</p>
+ </div>
+ <div style="background:var(--fg);border:1px solid var(--bd);border-radius:8px;padding:16px;margin:12px 0">
+  <strong>🚀 第三步：写代码</strong>
+<pre style="margin:6px 0"><code>from game_automator import GameAutomator
 
-# 1. 初始化 (地图 + 可达图)
 auto = GameAutomator("map.jpg", "reachable.png")
+auto.set_route((5000, 6000), (8000, 4000))
 
-# 2. 规划路径
-path = auto.set_route((5000, 6000), (8000, 4000))
-print(f"路径: {len(path)} 个点")
-
-# 3. 导航循环
 while not auto.arrived:
     pos = get_position()          # 你的定位
-    action = auto.step(pos)       # 返回 'MOVE_NE' / 'MOVE_S' ...
-    if action:
-        press_keys(action)        # 你的按键映射</code></pre>
+    action = auto.step(pos)       # 返回 'MOVE_N'/'MOVE_NE'/...
+    if action: press_keys(action) # 你的按键映射</code></pre>
+ </div>
+ <p>✅ 完成。框架只做三件事：<strong>规划路径 → 接收位置 → 返回方向</strong>。定位和按键由你实现。</p>
 </section>
 
 <section id="api">
@@ -119,9 +128,10 @@ ACT_KEYS = {
 
 <section id="example">
  <h2>完整示例: DeadMaze</h2>
+ <p style="color:var(--dim);font-size:13px">运行此示例需要完整的 DeadMaze 项目文件（ZIP 中的 <code>game_controller.py</code> 和 <code>map_tracker.py</code>）。如果只是用框架，不需要这些。</p>
  <pre><code>from game_automator import GameAutomator
-from game_controller import DeadMazeController  # DeadMaze 后台操控
-from map_tracker import Tracker                  # DeadMaze ORB 追踪
+from game_controller import DeadMazeController  # 来自 DeadMaze 项目
+from map_tracker import Tracker                  # 来自 DeadMaze 项目
 
 # 初始化
 auto = GameAutomator("map.jpg", "reachable.png")
