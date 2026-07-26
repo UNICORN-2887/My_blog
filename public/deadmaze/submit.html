@@ -51,13 +51,14 @@ th{color:var(--dim);font-weight:600;font-size:11px}
 <div class="step"><div class="step-num">1</div><div class="step-body">
  <h4>打包地图文件</h4>
  <p>将以下文件放入一个文件夹，文件夹名 = 地图名：</p>
- <pre><code>MyMap/
-  MyMap.jpg              # 必须: 拼接好的大地图
-  MyMap_reachable.png    # 必须: 二值可达图
-  MyMap_campfire.json    # 可选: 火堆坐标 [x, y]
-  MyMap_doors.json       # 可选: 门标记 [[x, y, type], ...]</code></pre>
- <p>然后打包为 ZIP：<code>地图名_你的用户名_编号.zip</code></p>
- <p>示例: <code>SunsetMall_player123_v1.zip</code></p>
+ <pre><code>MapName/
+  MapName.jpg              # 必须: 拼接好的大地图
+  MapName_reachable.png    # 必须: 二值可达图
+  MapName_campfire.json    # 可选: 火堆坐标 [x, y]
+  MapName_doors.json       # 可选: 门标记 [[x, y, type], ...]</code></pre>
+ <p>然后打包为 ZIP：<code>地图名_用户名_版本号.zip</code></p>
+ <p>示例: <code>SunsetMall_player123_v1.zip</code><br>
+ 解压后应形成 <code>map/SunsetMall/</code> 文件夹结构</p>
 </div></div>
 
 <div class="step"><div class="step-num">2</div><div class="step-body">

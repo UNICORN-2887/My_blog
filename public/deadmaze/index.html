@@ -161,7 +161,7 @@ table.keys td:first-child{white-space:nowrap;width:180px}
 
 <div class="step"><div class="step-num">4</div><div class="step-body">
  <h4>启动导航</h4>
- <p>双击 <code>run_navigator.bat</code> → 在导航窗口点起点/终点 → Enter 开始自动运行</p>
+ <p>双击 <code>run_navigator.bat</code> → 选地图 → 在导航窗口点起点/终点 → Enter 开始自动运行</p>
 </div></div>
 </section>
 
@@ -188,9 +188,6 @@ table.keys td:first-child{white-space:nowrap;width:180px}
  <li>确保虚拟摄像头输出分辨率设为 <strong>1920×1080</strong></li>
 </ol>
 <div class="warn"><strong>⚠ 重要</strong> — OBS 虚拟摄像头必须保持开启状态，导航脚本才能读取画面。</div>
-
-<h3>Tesseract OCR (可选)</h3>
-<p>提高中文 "开" 字和数字识别率。下载 <a href="https://github.com/UB-Mannheim/tesseract/wiki" target="_blank">Tesseract Windows 版</a>，安装到 <code>E:\Tools\tesseract</code>，安装时勾选 <strong>Chinese Simplified</strong> 语言包。</p>
 
 <h3>YOLO 模型</h3>
 <p>确保 <code>AImaneuver/runs/detect/deadmaze_combat/weights/best.pt</code> 存在。训练好的模型已包含在项目中。</p>
@@ -470,7 +467,7 @@ python navigator.py map/Lakeview18/Lakeview18_reachable.png --map map/Lakeview18
 <p>A: 确认 OBS Studio 已运行，菜单 → 工具 → 虚拟摄像头 → 启动。输出分辨率设为 1920×1080。</p>
 
 <h4>Q: OCR 识别不准，数字对不上？</h4>
-<p>A: 去标定页面 <code>/calibrate</code> 重新调整各 ROI 框的位置。不同分辨率需要不同的 ROI 坐标。</p>
+<p>A: 去标定页面 <code>/calibrate</code> 调整各 ROI 框位置。使用 EasyOCR 中英文双模型，无需安装 Tesseract。先确认 <a href="#config">摄像头选择</a> 正确。</p>
 
 <h4>Q: 导航时角色乱走/卡住？</h4>
 <p>A: 检查 OBS 画面是否正常采集到游戏。偏离路径会自动重规划，如果地图可达区标定有问题也会导致乱走。</p>
