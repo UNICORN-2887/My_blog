@@ -165,33 +165,32 @@ while not auto.arrived:
 <section id="arch">
  <h2>架构</h2>
  <div class="mermaid" style="background:#0f172a;padding:20px;border-radius:8px;margin:16px 0">
-graph TD
-    U[用户代码] -->|start,goal| A[GameAutomator]
-    U -->|帧画面| C[Capture]
-    U -->|执行按键| D[Driver]
+flowchart TD
+    U["User Code"] -->|"start,goal"| A[GameAutomator]
+    U -->|"frame"| C[Capture]
+    U -->|"execute"| DR[Driver]
 
-    subgraph Framework
-        A -->|规划路径| P[Pathfinder]
-        A -->|位置→方向| N[Navigator]
-        P -->|A*寻路| G[(可达图网格)]
-        N -->|lookahead| G
-        N -->|8方向匹配| V[DIR_VECTORS]
-        T[PositionTracker] -->|LK光流| P[Pathfinder]
+    subgraph FW["game-automator Framework"]
+        A -->|"plan"| P[Pathfinder]
+        A -->|"pos to dir"| N[Navigator]
+        P -->|"A*"| G[("Grid")]
+        N -->|"lookahead"| G
+        N -->|"best match"| V["8 Directions"]
+        T[PositionTracker] -->|"LK flow"| P
     end
 
-    C -->|OBS/ADB/MSS| F[画面帧]
+    C -->|"OBS/ADB"| F[Frame]
     F --> T
-    T -->|(x,y)坐标| A
-
-    A -->|动作名| U
-    D -->|SendMessage/ADB| GAME[游戏]
+    T -->|"(x,y)"| A
+    A -->|"action name"| U
+    DR -->|"SendMessage"| GAME[Game]
 
     style A fill:#3b82f6,stroke:#fff
     style P fill:#10b981,stroke:#fff
     style N fill:#10b981,stroke:#fff
     style C fill:#f59e0b,stroke:#fff
     style T fill:#f59e0b,stroke:#fff
-    style D fill:#8b5cf6,stroke:#fff
+    style DR fill:#8b5cf6,stroke:#fff
     style G fill:#1e293b,stroke:#666
     style GAME fill:#ef4444,stroke:#fff
  </div>
