@@ -220,6 +220,16 @@ flowchart TD
 动作名 → 用户Driver → 游戏按键</code></pre>
 </section>
 
+<h3>命令行工具</h3>
+ <table>
+  <tr><th>命令</th><th>说明</th></tr>
+  <tr><td><code>game-automator stitch -c 1 -o map.jpg</code></td><td>光流法建图</td></tr>
+  <tr><td><code>game-automator reachable map.jpg -o map_r.png</code></td><td>可达区标定 (涂刷/描边/门)</td></tr>
+  <tr><td><code>game-automator calibrate -c 1 -o rois.json</code></td><td>ROI 标定 (网页)</td></tr>
+  <tr><td><code>game-automator serve map_r.png</code></td><td>启动导航 REST API</td></tr>
+ </table>
+</section>
+
 <section id="install">
  <h2>安装 & 目录</h2>
  <pre><code>cd General_Generator
