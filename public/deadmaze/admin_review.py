@@ -13,7 +13,7 @@ IMAP_PORT = 993
 EMAIL_ADDR = "2198823120@qq.com"
 EMAIL_PWD = "bvbgoplsnkijecfb"
 MAP_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "DeadMaze", "map")
-SUBJECT_KEY = "[DeadMaze地图]"
+SUBJECT_KEY = "[DeadMaze提交]"
 
 VALID_MAPS = [
     "MazonAcademy","Lakeview18","BodegaBay","BlueMesa","WalkerRiver",
@@ -49,10 +49,11 @@ def fetch_submissions():
                 else: subject += s
             if SUBJECT_KEY not in subject: continue
             print(f"    ✅ 匹配: {subject[:80]}")
-            # 解析主题: [DeadMaze地图] 地图名 - 用户名
+            # 解析主题: [DeadMaze提交] 地图名 - 用户名 - 版本号
             parts = subject.replace(SUBJECT_KEY, "").strip().split("-")
             map_name = parts[0].strip() if parts else "Unknown"
             username = parts[1].strip() if len(parts) > 1 else "Unknown"
+            version = parts[2].strip() if len(parts) > 2 else "v1"
             # 下载附件
             attachments = []
             if msg.is_multipart():
@@ -69,7 +70,8 @@ def fetch_submissions():
             for fname, data in attachments:
                 submissions.append({
                     "map_name": map_name, "username": username,
-                    "filename": fname, "data": data, "subject": subject
+                    "version": version, "filename": fname,
+                    "data": data, "subject": subject
                 })
                 print(f"      附件: {fname} ({len(data)/1024:.0f}KB)")
     mail.logout()
@@ -117,7 +119,7 @@ def review():
     print(f"  共 {len(submissions)} 个待审核提交")
     print(f"{'='*60}\n")
     for i, sub in enumerate(submissions):
-        print(f"[{i+1}] {sub['map_name']} by {sub['username']}")
+        print(f"[{i+1}] {sub['map_name']} by {sub['username']} ({sub['version']})")
         print(f"    文件: {sub['filename']} ({len(sub['data'])/1024:.0f}KB)")
         ok = validate_zip(sub['data'], sub['map_name'])
         print(f"    验证: {'✅ 通过' if ok else '❌ 不通过'}")
