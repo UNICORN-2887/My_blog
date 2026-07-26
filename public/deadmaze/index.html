@@ -102,8 +102,10 @@ table.keys td:first-child{white-space:nowrap;width:180px}
  <a href="#supply" class="tag">补给系统</a>
  <a href="#params">参数说明</a>
  <a href="#screenshots">界面截图</a>
+ <a href="#maps">🗺 地图下载</a>
  <a href="#faq">FAQ</a>
- <a href="#advanced">进阶 <span class="badge badge-wip">开发中</span></a>
+ <a href="#advanced">进阶</a>
+ <a href="submit.html">📤 提交地图</a>
 </nav>
 
 <main>
@@ -192,6 +194,10 @@ table.keys td:first-child{white-space:nowrap;width:180px}
 
 <h3>YOLO 模型</h3>
 <p>确保 <code>AImaneuver/runs/detect/deadmaze_combat/weights/best.pt</code> 存在。训练好的模型已包含在项目中。</p>
+
+<h3>加速版插件 (可选)</h3>
+<p>DeadMazeSteam加速版.exe — 游戏加速插件，非必须。如果要用，下载后放到项目 <code>tools/</code> 目录，在配置面板填入路径即可。</p>
+<a href="https://raw.githubusercontent.com/UNICORN-2887/-/master/tools/DeadMazeSteam加速版.exe" class="btn btn-sec" style="display:inline-block">📥 下载加速版 (7MB)</a>
 </section>
 
 <!-- ═══════════════════════════════════════════ -->
@@ -245,8 +251,12 @@ table.keys td:first-child{white-space:nowrap;width:180px}
 <h2>🗺 导航使用</h2>
 
 <h3>启动</h3>
-<pre><code>python navigator.py MazonAcademy_reachable.png --map MazonAcademy.jpg
-# 如果建了新地图: python navigator.py MyMap_reachable.png --map MyMap.jpg
+<pre><code># MazonAcademy (默认地图, 已完成标定)
+python navigator.py map/MazonAcademy/MazonAcademy_reachable.png --map map/MazonAcademy/MazonAcademy.jpg
+
+# 自定义地图 (地图名=文件夹名)
+python navigator.py map/MapName/MapName_reachable.png --map map/MapName/MapName.jpg
+
 # 或双击 run_navigator.bat</code></pre>
 
 <h3>操作键位</h3>
@@ -415,6 +425,41 @@ table.keys td:first-child{white-space:nowrap;width:180px}
  <tr><td>武器</td><td><code>W Threshold</code></td><td>0.3</td><td>空槽判定阈值 (高于此值=空)</td></tr>
  <tr><td>武器</td><td><code>W Check</code></td><td>15s</td><td>武器检测间隔</td></tr>
 </table>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="maps">
+<h2>🗺 地图下载</h2>
+<p>下载地图文件后，解压到项目的 <code>map/</code> 目录即可使用。例如 <code>MazonAcademy.zip</code> 解压后应形成 <code>map/MazonAcademy/</code> 文件夹。</p>
+
+<p>📤 <strong>没有你玩的地图？</strong> <a href="submit.html">提交你的地图</a> 或者 <a href="#advanced">学习如何自建</a>。</p>
+
+<div class="step"><div class="step-num">1</div><div class="step-body">
+<h4>MazonAcademy <span class="badge badge-ok">已标定</span></h4>
+<p>包含: 大地图 + 可达图 + 火堆坐标 + 门标记</p>
+<a href="https://raw.githubusercontent.com/UNICORN-2887/-/master/map/MazonAcademy/MazonAcademy.jpg" class="btn btn-sec" style="display:inline-block;margin:4px">📥 地图 JPG (38MB)</a>
+<a href="https://raw.githubusercontent.com/UNICORN-2887/-/master/map/MazonAcademy/MazonAcademy_reachable.png" class="btn btn-sec" style="display:inline-block;margin:4px">📥 可达图 PNG</a>
+<a href="https://raw.githubusercontent.com/UNICORN-2887/-/master/map/MazonAcademy/MazonAcademy_campfire.json" class="btn btn-sec" style="display:inline-block;margin:4px">📥 火堆 JSON</a>
+<a href="https://raw.githubusercontent.com/UNICORN-2887/-/master/map/MazonAcademy/MazonAcademy_doors.json" class="btn btn-sec" style="display:inline-block;margin:4px">📥 门标记 JSON</a>
+</div></div>
+
+<div class="step"><div class="step-num">2</div><div class="step-body">
+<h4>Lakeview18 <span class="badge badge-wip">待标定</span></h4>
+<p>仅有大地图，可达图待标定</p>
+<a href="https://raw.githubusercontent.com/UNICORN-2887/-/master/map/Lakeview18/Lakeview18.jpg" class="btn btn-sec" style="display:inline-block;margin:4px">📥 地图 JPG (10MB)</a>
+</div></div>
+
+<div class="step"><div class="step-num">?</div><div class="step-body">
+<h4>BodegaBay / BlueMesa / WalkerRiver / SunsetMall / SantaRosaDowntown / Highway99 / ArizonaJurassicMuseum / SacramentoSuburbs / SurvivorCamp</h4>
+<p>这些地图暂无文件。欢迎 <a href="submit.html">提交</a> 或 <a href="#advanced">自行建图</a>。</p>
+</div></div>
+
+<h4>下载后如何使用</h4>
+<pre><code># 1. 解压到对应 map 子目录 (例如 map/MazonAcademy/)
+# 2. 双击 run_navigator.bat (默认启动 MazonAcademy)
+# 3. 或指定自定义地图:
+python navigator.py map/Lakeview18/Lakeview18_reachable.png --map map/Lakeview18/Lakeview18.jpg</code></pre>
 </section>
 
 <!-- ═══════════════════════════════════════════ -->
