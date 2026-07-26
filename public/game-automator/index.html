@@ -162,6 +162,65 @@ while not auto.arrived:
  <p>完整可运行代码见 GitHub: <code>examples/deadmaze/test_full.py</code></p>
 </section>
 
+<section id="arch">
+ <h2>架构</h2>
+ <div class="mermaid" style="background:#0f172a;padding:20px;border-radius:8px;margin:16px 0">
+graph TD
+    U[用户代码] -->|start,goal| A[GameAutomator]
+    U -->|帧画面| C[Capture]
+    U -->|执行按键| D[Driver]
+
+    subgraph Framework
+        A -->|规划路径| P[Pathfinder]
+        A -->|位置→方向| N[Navigator]
+        P -->|A*寻路| G[(可达图网格)]
+        N -->|lookahead| G
+        N -->|8方向匹配| V[DIR_VECTORS]
+        T[PositionTracker] -->|LK光流| P[Pathfinder]
+    end
+
+    C -->|OBS/ADB/MSS| F[画面帧]
+    F --> T
+    T -->|(x,y)坐标| A
+
+    A -->|动作名| U
+    D -->|SendMessage/ADB| GAME[游戏]
+
+    style A fill:#3b82f6,stroke:#fff
+    style P fill:#10b981,stroke:#fff
+    style N fill:#10b981,stroke:#fff
+    style C fill:#f59e0b,stroke:#fff
+    style T fill:#f59e0b,stroke:#fff
+    style D fill:#8b5cf6,stroke:#fff
+    style G fill:#1e293b,stroke:#666
+    style GAME fill:#ef4444,stroke:#fff
+ </div>
+
+ <h3>模块职责</h3>
+ <table>
+  <tr><th>模块</th><th>输入</th><th>输出</th><th>状态</th></tr>
+  <tr><td><code>automator</code></td><td>start, goal, pos</td><td>动作名</td><td>✅ 完成</td></tr>
+  <tr><td><code>mapping / Pathfinder</code></td><td>可达图PNG, start, goal</td><td>路径点列表</td><td>✅ 完成</td></tr>
+  <tr><td><code>navigation / Navigator</code></td><td>路径, 当前位置</td><td>8方向动作</td><td>✅ 完成</td></tr>
+  <tr><td><code>capture</code></td><td>摄像头ID</td><td>numpy帧</td><td>✅ 完成</td></tr>
+  <tr><td><code>stitching / MapStitcher</code></td><td>连续帧</td><td>大地图JPG</td><td>✅ 完成</td></tr>
+  <tr><td><code>mapping / ReachabilityEditor</code></td><td>地图JPG</td><td>可达图PNG</td><td>✅ 完成</td></tr>
+  <tr><td><code>mapping / PositionTracker</code></td><td>帧, 初始位置</td><td>(x,y)坐标</td><td>⚠️ 需调试</td></tr>
+  <tr><td><code>calibration</code></td><td>ROI区域, 帧</td><td>JSON配置</td><td>✅ 完成</td></tr>
+  <tr><td><code>driver</code></td><td>动作名</td><td>游戏按键</td><td>🔜 用户实现</td></tr>
+  <tr><td><code>navigation / NavigationServer</code></td><td>HTTP请求</td><td>JSON响应</td><td>✅ 完成</td></tr>
+ </table>
+
+ <h3>数据流</h3>
+ <pre><code>画面采集 → 定位追踪 → 当前位置(x,y)
+                          ↓
+起点(x,y) + 终点(x,y) → A*寻路 → 路径点列表
+                          ↓
+当前位置 + 路径 → Navigator → 动作名(MOVE_NE/S/...)
+                          ↓
+动作名 → 用户Driver → 游戏按键</code></pre>
+</section>
+
 <section id="install">
  <h2>安装 & 目录</h2>
  <pre><code>cd General_Generator
@@ -178,5 +237,7 @@ pip install -e .</code></pre>
 </section>
 
 </main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true,theme:'dark'});</script>
 </body>
 </html>
