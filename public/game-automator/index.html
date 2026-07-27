@@ -205,16 +205,43 @@ class MyGameDriver(AbstractDriver):
 
 
 # ============================================
-# 填空2: 你的定位函数
+# 填空2: 你的定位函数 (4种方案, 选一个)
 # ============================================
 def my_get_position():
     """返回角色在地图上的 (x, y) 像素坐标"""
-    # 填空: 你的定位逻辑
-    # 方案A: 项目内置 map_tracker.py (DeadMaze已验证, ORB hybrid)
-    # 方案B: 框架 ServerTrack 服务端光流 (/api/track_frame, 相位相关)
-    # 方案C: 框架 OBSTrack OBS光流 (/api/track, DeadMaze ORB hybrid)
-    #        **注意: OBS需精确裁剪到游戏画面, 全屏UI区域会稀释位移信号**
-    # 方案D: 模板匹配 / 读内存 / 你自己的方案
+
+    # ── 方案A: DeadMaze map_tracker.py (已验证可靠) ──
+    # 初始化: tracker = Tracker("map.jpg", camera_id=1)
+    #          tracker.last_position = start_pos
+    # 每帧调用:
+    # tracker.track()
+    # return tracker.last_position
+    #
+    # 原理: ORB帧间位移 + ORB地图ROI定锚 → 绝对坐标
+
+    # ── 方案B: 框架 ServerTrack (相位相关, Demo验证 resp≈0.99) ──
+    # 无需本地OpenCV, 通过 HTTP 调服务端
+    # import urllib.request, json
+    # def post(path, data):
+    #     body = json.dumps(data).encode()
+    #     req = urllib.request.Request(f"http://127.0.0.1:5001{path}",
+    #         data=body, headers={"Content-Type":"application/json"}, method="POST")
+    #     with urllib.request.urlopen(req, timeout=5) as r:
+    #         return json.loads(r.read().decode())
+    #
+    # tk = post("/api/track_frame", {"x": current_x, "y": current_y})
+    # if tk.get("conf", 0) > 0.5:
+    #     return (tk["pos"][0], tk["pos"][1])
+    # return (current_x, current_y)  # fallback
+
+    # ── 方案C: 框架 OBSTrack (OBS + ORB hybrid, 真实游戏用) ──
+    # OBS 必须精确裁剪到纯游戏画面, 帧像素与地图像素 1:1
+    # tk = post("/api/track", {"x": current_x, "y": current_y})
+    # if tk.get("conf", 0) > 0.2:
+    #     return (tk["pos"][0], tk["pos"][1])
+    # return (current_x, current_y)
+
+    # ── 方案D: 自定义定位 (模板匹配/读内存/OCR/你自己) ──
     return (0, 0)  # 替换为实际位置
 
 
