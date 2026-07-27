@@ -210,9 +210,11 @@ class MyGameDriver(AbstractDriver):
 def my_get_position():
     """返回角色在地图上的 (x, y) 像素坐标"""
     # 填空: 你的定位逻辑
-    # 方案A: 项目内置 map_tracker.py (已验证可靠, ORB+金字塔地图匹配)
-    # 方案B: 框架 PositionTracker (LK光流, 仍在调试)
-    # 方案C: 模板匹配 / 读内存 / 你自己的方案
+    # 方案A: 项目内置 map_tracker.py (DeadMaze已验证, ORB hybrid)
+    # 方案B: 框架 ServerTrack 服务端光流 (/api/track_frame, 相位相关)
+    # 方案C: 框架 OBSTrack OBS光流 (/api/track, DeadMaze ORB hybrid)
+    #        **注意: OBS需精确裁剪到游戏画面, 全屏UI区域会稀释位移信号**
+    # 方案D: 模板匹配 / 读内存 / 你自己的方案
     return (0, 0)  # 替换为实际位置
 
 
@@ -348,7 +350,8 @@ flowchart TD
   <tr><td><code>capture</code></td><td>摄像头ID</td><td>numpy帧</td><td>✅ 完成</td></tr>
   <tr><td><code>stitching / MapStitcher</code></td><td>连续帧</td><td>大地图JPG</td><td>✅ 完成</td></tr>
   <tr><td><code>mapping / ReachabilityEditor</code></td><td>地图JPG</td><td>可达图PNG</td><td>✅ 完成</td></tr>
-  <tr><td><code>mapping / PositionTracker</code></td><td>帧, 初始位置</td><td>(x,y)坐标</td><td>⚠️ 需调试</td></tr>
+  <tr><td><code>navigation / ServerTrack</code></td><td>当前位置, 地图</td><td>(x,y)坐标</td><td>✅ 完成 (相位相关)</td></tr>
+  <tr><td><code>navigation / OBSTrack</code></td><td>OBS帧, 地图</td><td>(x,y)坐标</td><td>✅ 就绪 (ORB hybrid)</td></tr>
   <tr><td><code>calibration</code></td><td>ROI区域, 帧</td><td>JSON配置</td><td>✅ 完成</td></tr>
   <tr><td><code>driver</code></td><td>动作名</td><td>游戏按键</td><td>🔜 用户实现</td></tr>
   <tr><td><code>navigation / NavigationServer</code></td><td>HTTP请求</td><td>JSON响应</td><td>✅ 完成</td></tr>
@@ -364,6 +367,38 @@ flowchart TD
 动作名 → 用户Driver → 游戏按键</code></pre>
 </section>
 
+<h3>定位追踪: 两种模式</h3>
+ <table>
+  <tr><th>模式</th><th>端点</th><th>输入</th><th>算法</th><th>适用场景</th></tr>
+  <tr>
+   <td><strong>ServerTrack</strong></td>
+   <td><code>POST /api/track_frame</code></td>
+   <td>当前位置 (x,y)</td>
+   <td>服务端渲染视口 + 相位相关帧间检测</td>
+   <td>Demo验证、算法调试、服务端定位</td>
+  </tr>
+  <tr>
+   <td><strong>OBSTrack</strong></td>
+   <td><code>POST /api/track</code></td>
+   <td>OBS帧 + 当前位置 (x,y)</td>
+   <td>DeadMaze ORB hybrid: 帧间位移 + 地图ROI定锚</td>
+   <td>真实游戏 OBS 采集</td>
+  </tr>
+ </table>
+ <div class="warn" style="margin:12px 0;background:var(--fg);border:1px solid #f59e0b;border-radius:8px;padding:16px">
+  <strong>⚠️ OBSTrack 使用限制（重要）</strong>
+  <p style="margin:8px 0 0">
+   OBSTrack 通过 OBS 虚拟摄像头采集游戏画面，<strong>仅在以下条件全部满足时工作</strong>：<br>
+   1. OBS 窗口采集<strong>精确裁剪到纯游戏画面区域</strong>（无浏览器UI、无桌面背景）<br>
+   2. 游戏画面<strong>随角色移动自然滚动</strong>（适用于 DeadMaze 等俯视角游戏）<br>
+   3. 地图由同样 OBS 分辨率拼接而成（<strong>帧像素与地图像素 1:1 对应</strong>）<br><br>
+   <strong>浏览器 Demo 中 OBSTrack 不可用</strong>：浏览器 Canvas 重绘 → 屏幕合成 → OBS 采集这条链路延迟过大，<br>
+   OBS 帧间无法可靠检测位移。Demo 请使用 ServerTrack 验证光流算法。<br>
+   真实 DeadMaze 游戏中（游戏直接渲染到屏幕）不存在此延迟，OBSTrack 正常工作。<br>
+   DeadMaze 已验证方案：参见项目 <code>map_tracker.py</code>。
+  </p>
+ </div>
+
 <h3>OBS 场景配置</h3>
  <div class="warn" style="margin:12px 0"><strong>⚠ 建图和导航需要不同的 OBS 画幅</strong>——建图时裁剪 HUD，导航时需要完整画面。</div>
  <p>在 OBS 中：场景集合 → 导入 → 选择对应的 JSON 配置文件。</p>
@@ -372,10 +407,35 @@ flowchart TD
 <h3>命令行工具</h3>
  <table>
   <tr><th>命令</th><th>说明</th></tr>
-  <tr><td><code>game-automator stitch -c 1 -o map.jpg</code></td><td>光流法建图</td></tr>
-  <tr><td><code>game-automator reachable map.jpg -o map_r.png</code></td><td>可达区标定 (涂刷/描边/门)</td></tr>
+  <tr><td><code>game-automator stitch -c 1 -o map.jpg</code></td><td>光流法建图 (摄像头选择 + 双窗口 + CropRegion裁剪框)</td></tr>
+  <tr><td><code>game-automator reachable map.jpg -o map_r.png</code></td><td>可达区标定 (边界检测+P描边+D门标记+T视图+HSV+形态学)</td></tr>
   <tr><td><code>game-automator calibrate -c 1 -o rois.json</code></td><td>ROI 标定 (网页)</td></tr>
   <tr><td><code>game-automator serve map_r.png</code></td><td>启动导航 REST API</td></tr>
+ </table>
+
+ <h3>建图器 stitch 操作键 (严格匹配 DeadMaze)</h3>
+ <table>
+  <tr><th>键</th><th>功能</th><th>键</th><th>功能</th></tr>
+  <tr><td>A</td><td>切换自动拼接</td><td>C</td><td>手动拼接当前帧</td></tr>
+  <tr><td>S</td><td>保存地图 + 裁剪配置</td><td>R</td><td>重置地图</td></tr>
+  <tr><td>T</td><td>切换裁剪框显示</td><td>Q</td><td>退出 (自动保存裁剪配置)</td></tr>
+  <tr><td>IJKL</td><td>微调裁剪框位置</td><td>+/-</td><td>缩放裁剪框 (四边同时)</td></tr>
+  <tr><td>Shift+WASD</td><td>收缩单边 (上/下/左/右)</td><td>—</td><td>双窗口: 画面 + 拼接地图</td></tr>
+ </table>
+ <p style="color:var(--dim);font-size:12px">启动时列出所有可用摄像头，自动选 OBS，支持手动输入编号。裁剪配置保存到 <code>map_stitcher_crop.json</code>。</p>
+
+ <h3>可达区标定器 reachable 操作键 (严格匹配 DeadMaze)</h3>
+ <table>
+  <tr><th>键</th><th>功能</th><th>键</th><th>功能</th></tr>
+  <tr><td>左键拖拽</td><td>涂白 (可达)</td><td>右键拖拽</td><td>涂黑 (不可达)</td></tr>
+  <tr><td>P / M</td><td>切换描边模式</td><td>Enter</td><td>填充多边形</td></tr>
+  <tr><td>F (描边模式)</td><td>切换填充颜色</td><td>Esc</td><td>取消当前多边形</td></tr>
+  <tr><td>D</td><td>门标记模式</td><td>1/2 (门模式)</td><td>选择门方向</td></tr>
+  <tr><td>1-4</td><td>画笔大小 (4/12/30/80)</td><td>T</td><td>切换视图 (叠加/二值/原图)</td></tr>
+  <tr><td>IJKL</td><td>平移</td><td>+/-</td><td>缩放</td></tr>
+  <tr><td>C</td><td>HSV 颜色分割初稿</td><td>中键拖拽</td><td>平移</td></tr>
+  <tr><td>S</td><td>保存</td><td>Q</td><td>保存 + 退出</td></tr>
+  <tr><td>—</td><td>启动时自动边界检测</td><td>—</td><td>断点续标 (自动加载已有标注)</td></tr>
  </table>
 </section>
 
@@ -401,14 +461,26 @@ python -m game_automator.server serve grid_reachable.png --map grid_map.jpg
   <tr><td>🎮 Ext Control</td><td>外部控制模式，按键精灵/Python 脚本通过 REST API 驱动红点移动</td></tr>
  </table>
 
- <h3>OBS 闭环测试</h3>
+ <h3>光流追踪: ServerTrack (Demo验证)</h3>
+ <p>Auto Sim 模式下，每步自动调用 <code>POST /api/track_frame</code>——服务端从大地图渲染当前视口，相位相关检测帧间位移，返回修正后的绝对坐标。完整流程：</p>
  <ol>
-  <li>OBS Studio 添加浏览器窗口采集 → 对准视口区域（640×360 橙色边框）</li>
-  <li>启动虚拟摄像头</li>
-  <li>点击 <strong>Live OBS</strong> 确认画面正常</li>
-  <li>设起终点 → Plan Path → <strong>Auto Sim</strong></li>
-  <li>观察 Capture→Track→Decide→Move 四个指示灯依次闪绿</li>
+  <li>设起终点 → Plan Path</li>
+  <li>点 <strong>Auto Sim</strong></li>
+  <li>ServerTrack 每步返回修正后坐标 → Navigator 决策方向 → 移动 → 重绘视口</li>
+  <li>观察指示灯的 Track→Decide→Move 依次闪绿</li>
  </ol>
+ <p style="color:var(--dim);font-size:12px">ServerTrack 在 Demo 中的相位相关 resp≈0.99，全链路精准验证。配合 Gen VBS / Gen Python 生成脚本可直接用于自动化。</p>
+
+ <h3>OBS 闭环测试 (真实游戏)</h3>
+ <ol>
+  <li>OBS Studio 窗口采集 → 精确裁剪到纯游戏画面（无 UI）</li>
+  <li>启动虚拟摄像头，网页选摄像头</li>
+  <li>设起终点 → Plan Path → <strong>Auto Sim</strong></li>
+  <li>OBSTrack（<code>POST /api/track</code>）使用 DeadMaze ORB hybrid 进行地图ROI定锚</li>
+ </ol>
+ <div class="warn" style="margin:8px 0;background:var(--fg);border:1px solid #f59e0b;border-radius:6px;padding:10px;font-size:12px">
+  <strong>⚠ 浏览器 Demo 使用 ServerTrack</strong>（服务端渲染视口+相位相关），OBSTrack 仅在真实游戏中可用——详见上方定位追踪章节。
+ </div>
 </section>
 
 <section id="install">
