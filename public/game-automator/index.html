@@ -210,9 +210,9 @@ class MyGameDriver(AbstractDriver):
 def my_get_position():
     """返回角色在地图上的 (x, y) 像素坐标"""
     # 填空: 你的定位逻辑
-    # 方案A: OBS + ORB追踪 (框架自带 PositionTracker)
-    # 方案B: 模板匹配
-    # 方案C: 读内存
+    # 方案A: 项目内置 map_tracker.py (已验证可靠, ORB+金字塔地图匹配)
+    # 方案B: 框架 PositionTracker (LK光流, 仍在调试)
+    # 方案C: 模板匹配 / 读内存 / 你自己的方案
     return (0, 0)  # 替换为实际位置
 
 
