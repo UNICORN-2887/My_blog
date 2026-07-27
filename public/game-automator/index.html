@@ -34,6 +34,7 @@ th{color:var(--dim);font-size:11px;text-transform:uppercase}
  <a href="#quickstart">快速开始</a>
  <a href="#api">API 参考</a>
  <a href="#actions">动作映射</a>
+ <a href="#demo">交互Demo</a>
  <a href="#example">完整示例</a>
  <a href="#install">安装</a>
 </nav>
@@ -264,6 +265,38 @@ flowchart TD
   <tr><td><code>game-automator calibrate -c 1 -o rois.json</code></td><td>ROI 标定 (网页)</td></tr>
   <tr><td><code>game-automator serve map_r.png</code></td><td>启动导航 REST API</td></tr>
  </table>
+</section>
+
+<section id="demo">
+ <h2>交互式 Demo</h2>
+ <p>框架内置了一个完整的浏览器 Demo，无需游戏即可测试全部功能。</p>
+
+ <h3>启动</h3>
+ <pre><code>cd General_Generator/examples
+python -m game_automator.server serve grid_reachable.png --map grid_map.jpg
+# 浏览器打开 http://127.0.0.1:5001</code></pre>
+
+ <h3>页面功能</h3>
+ <table>
+  <tr><th>功能</th><th>说明</th></tr>
+  <tr><td>🗺 大地图</td><td>点击设起点(绿) / Shift+点击设终点(蓝) / 显示路径(蓝线)和视口框(橙虚线)</td></tr>
+  <tr><td>📷 OBS 视口</td><td>上方 640×360 窗口模拟游戏画面，OBS 可采集此区域做追踪测试</td></tr>
+  <tr><td>🧭 Plan Path</td><td>A* 寻路规划，蓝线显示完整路径（自动绕过障碍）</td></tr>
+  <tr><td>▶ Auto Sim</td><td>自动沿路径前进，每步显示 OBS 画面+ORB追踪+导航决策+移动</td></tr>
+  <tr><td>🎛 Nav Params</td><td>实时调节 Shrink/WP Reach/Goal Reach/Lookahead，Apply 立即生效</td></tr>
+  <tr><td>📝 Gen VBS</td><td>一键生成按键精灵脚本（自动填入起终点和速度参数）</td></tr>
+  <tr><td>🐍 Gen Python</td><td>一键生成纯 Python 脚本（标准库，无依赖，直接运行）</td></tr>
+  <tr><td>🎮 Ext Control</td><td>外部控制模式，按键精灵/Python 脚本通过 REST API 驱动红点移动</td></tr>
+ </table>
+
+ <h3>OBS 闭环测试</h3>
+ <ol>
+  <li>OBS Studio 添加浏览器窗口采集 → 对准视口区域（640×360 橙色边框）</li>
+  <li>启动虚拟摄像头</li>
+  <li>点击 <strong>Live OBS</strong> 确认画面正常</li>
+  <li>设起终点 → Plan Path → <strong>Auto Sim</strong></li>
+  <li>观察 Capture→Track→Decide→Move 四个指示灯依次闪绿</li>
+ </ol>
 </section>
 
 <section id="install">
