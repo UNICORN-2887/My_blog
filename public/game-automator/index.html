@@ -158,7 +158,7 @@ Select Case action
   <tr><th>步骤</th><th>你要做的</th><th>框架提供的</th></tr>
   <tr><td>1. 映射按键</td><td>写一个类，把8个方向+攻击翻译成游戏按键</td><td>AbstractDriver 基类</td></tr>
   <tr><td>2. 建图标定</td><td>绕地图走一圈 + 涂刷可达区</td><td>CLI 命令 (stitch/reachable)</td></tr>
-  <tr><td>3. 写定位</td><td>实现 get_position() 返回角色坐标</td><td>PositionTracker 可用作参考</td></tr>
+  <tr><td>3. 写定位</td><td>选方案A(ServerTrack)或方案B(OBSTrack)</td><td>两套光流定位, 填空模板有完整代码</td></tr>
   <tr><td>4. 跑导航</td><td>3行代码搞定</td><td>GameAutomator</td></tr>
  </table>
 
@@ -210,17 +210,9 @@ class MyGameDriver(AbstractDriver):
 def my_get_position():
     """返回角色在地图上的 (x, y) 像素坐标"""
 
-    # ── 方案A: DeadMaze map_tracker.py (已验证可靠) ──
-    # 初始化: tracker = Tracker("map.jpg", camera_id=1)
-    #          tracker.last_position = start_pos
-    # 每帧调用:
-    # tracker.track()
-    # return tracker.last_position
-    #
-    # 原理: ORB帧间位移 + ORB地图ROI定锚 → 绝对坐标
-
-    # ── 方案B: 框架 ServerTrack (相位相关, Demo验证 resp≈0.99) ──
-    # 无需本地OpenCV, 通过 HTTP 调服务端
+    # ── 方案A: ServerTrack 服务端光流 (相位相关, 无需OBS) ──
+    # HTTP调服务端, 服务端从大地图渲染视口 → 相位相关检测位移
+    # Demo已验证 resp≈0.99, 适合: 脚本自动化、无OBS环境、快速验证
     # import urllib.request, json
     # def post(path, data):
     #     body = json.dumps(data).encode()
@@ -234,14 +226,23 @@ def my_get_position():
     #     return (tk["pos"][0], tk["pos"][1])
     # return (current_x, current_y)  # fallback
 
-    # ── 方案C: 框架 OBSTrack (OBS + ORB hybrid, 真实游戏用) ──
-    # OBS 必须精确裁剪到纯游戏画面, 帧像素与地图像素 1:1
-    # tk = post("/api/track", {"x": current_x, "y": current_y})
-    # if tk.get("conf", 0) > 0.2:
-    #     return (tk["pos"][0], tk["pos"][1])
-    # return (current_x, current_y)
+    # ── 方案B: OBSTrack OBS光流 (DeadMaze ORB hybrid: 帧间ORB + 地图ROI定锚) ──
+    # 与 DeadMaze map_tracker.py 同一算法, 两种用法:
+    #
+    # 用法1 — 本地调用 (同 DeadMaze):
+    #   tracker = Tracker("map.jpg", camera_id=1)
+    #   tracker.last_position = start_pos
+    #   tracker.track();  return tracker.last_position
+    #
+    # 用法2 — HTTP调用 (框架 NavigationServer):
+    #   tk = post("/api/track", {"x": current_x, "y": current_y})
+    #   if tk.get("conf", 0) > 0.2:
+    #       return (tk["pos"][0], tk["pos"][1])
+    #   return (current_x, current_y)
+    #
+    # ⚠ OBS必须精确裁剪到纯游戏画面, 帧像素与地图像素1:1, 浏览器Demo不可用
 
-    # ── 方案D: 自定义定位 (模板匹配/读内存/OCR/你自己) ──
+    # ── 方案C: 自定义定位 (模板匹配/读内存/OCR/你自己) ──
     return (0, 0)  # 替换为实际位置
 
 
