@@ -35,6 +35,7 @@ th{color:var(--dim);font-size:11px;text-transform:uppercase}
  <a href="#api">API 参考</a>
  <a href="#actions">动作映射</a>
  <a href="#demo">交互Demo</a>
+ <a href="#integrate">接入指南</a>
  <a href="#example">完整示例</a>
  <a href="#install">安装</a>
 </nav>
@@ -146,6 +147,117 @@ Select Case action
   <summary style="cursor:pointer;color:var(--ac)"><strong>AutoHotkey / JavaScript / curl</strong></summary>
   <p>完整示例见 <a href="https://github.com/UNICORN-2887/-/tree/master/General_Generator/docs/API.md">API 文档</a></p>
  </details>
+</section>
+
+<section id="integrate">
+ <h2>接入你的游戏</h2>
+ <p>框架负责"想去哪、怎么走"，<strong>你只负责"按下哪个键"</strong>。三步接入：</p>
+
+ <h3>最少需要做的工作</h3>
+ <table>
+  <tr><th>步骤</th><th>你要做的</th><th>框架提供的</th></tr>
+  <tr><td>1. 映射按键</td><td>写一个类，把8个方向+攻击翻译成游戏按键</td><td>AbstractDriver 基类</td></tr>
+  <tr><td>2. 建图标定</td><td>绕地图走一圈 + 涂刷可达区</td><td>CLI 命令 (stitch/reachable)</td></tr>
+  <tr><td>3. 写定位</td><td>实现 get_position() 返回角色坐标</td><td>PositionTracker 可用作参考</td></tr>
+  <tr><td>4. 跑导航</td><td>3行代码搞定</td><td>GameAutomator</td></tr>
+ </table>
+
+ <h3>填空模板</h3>
+ <p>复制下面的代码，填入你游戏的按键映射即可：</p>
+ <pre><code>from game_automator import GameAutomator, Actions
+from game_automator.driver import AbstractDriver
+
+# ============================================
+# 填空1: 把你的游戏按键填到这里
+# ============================================
+class MyGameDriver(AbstractDriver):
+    """把你游戏的按键映射填在下面"""
+
+    def execute(self, action, duration_ms=100):
+        """收到一个标准动作，翻译成游戏按键"""
+        # 填空: 8个方向的按键是什么？
+        key_map = {
+            Actions.MOVE_N:  '___',   # 上: 按什么键？
+            Actions.MOVE_S:  '___',   # 下
+            Actions.MOVE_W:  '___',   # 左
+            Actions.MOVE_E:  '___',   # 右
+            Actions.MOVE_NE: ('___', '___'),  # 右上 (双键)
+            Actions.MOVE_NW: ('___', '___'),  # 左上
+            Actions.MOVE_SE: ('___', '___'),  # 右下
+            Actions.MOVE_SW: ('___', '___'),  # 左下
+            Actions.ATTACK:  '___',   # 攻击键
+            Actions.INTERACT:'___',   # 交互键 (开门/对话)
+        }
+        keys = key_map.get(action)
+        if keys is None: return
+        if isinstance(keys, tuple):
+            press_both(keys[0], keys[1], duration_ms)  # 双键同时按
+        else:
+            press_single(keys, duration_ms)
+
+    def release_all(self):
+        """填空: 释放所有移动键"""
+        release_keys(['___', '___', '___', '___'])
+
+    def click(self, x, y):
+        """填空: 在游戏画面的(x,y)执行点击"""
+        mouse_click(x, y)  # 你的游戏鼠标点击函数
+
+
+# ============================================
+# 填空2: 你的定位函数
+# ============================================
+def my_get_position():
+    """返回角色在地图上的 (x, y) 像素坐标"""
+    # 填空: 你的定位逻辑
+    # 方案A: OBS + ORB追踪 (框架自带 PositionTracker)
+    # 方案B: 模板匹配
+    # 方案C: 读内存
+    return (0, 0)  # 替换为实际位置
+
+
+# ============================================
+# 填空3: 你的按键函数
+# ============================================
+def press_single(key, duration_ms):
+    """按下单个键并保持 duration_ms 毫秒"""
+    # 填空: Windows = SendInput, 模拟器 = ADB input
+    pass
+
+def press_both(key1, key2, duration_ms):
+    """同时按下两个键"""
+    press_single(key1, duration_ms)  # 简单实现: 先后按
+    press_single(key2, duration_ms)
+
+def release_keys(keys):
+    """释放所有键"""
+    pass
+
+def mouse_click(x, y):
+    """鼠标点击"""
+    pass
+
+
+# ============================================
+# 主程序 (不用改)
+# ============================================
+auto = GameAutomator("my_map.jpg", "my_reachable.png")
+driver = MyGameDriver()
+auto.set_route((1000, 500), (2000, 800))
+
+while not auto.arrived:
+    pos = my_get_position()
+    action = auto.step(pos)   # 返回 'MOVE_NE' / 'MOVE_S' / ...
+    if action:                # None = 到达终点
+        driver.execute(action)</code></pre>
+
+ <h3>AbstractDriver 三个方法的作用</h3>
+ <table>
+  <tr><th>方法</th><th>框架什么时候调用</th><th>你要做什么</th></tr>
+  <tr><td><code>execute(action, ms)</code></td><td>每帧导航步进，如"MOVE_NE"</td><td>翻译成游戏按键，按下去</td></tr>
+  <tr><td><code>release_all()</code></td><td>导航停止、卡住重规划时</td><td>松开所有按键，避免角色继续乱走</td></tr>
+  <tr><td><code>click(x, y)</code></td><td>需要交互时，如火堆点击</td><td>在游戏画面的(x,y)坐标执行鼠标点击</td></tr>
+ </table>
 </section>
 
 <section id="example">
