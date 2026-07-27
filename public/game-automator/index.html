@@ -126,6 +126,27 @@ ACT_KEYS = {
 }</code></pre>
 </section>
 
+<section id="languages">
+ <h2>多语言接入</h2>
+ <p>启动 REST API 后，任何语言通过 HTTP 调用即可。以下是按键精灵 / AutoHotkey / JS 示例。</p>
+ <details style="margin:8px 0">
+  <summary style="cursor:pointer;color:var(--ac)"><strong>按键精灵 (VBScript)</strong></summary>
+  <pre><code>Set http = CreateObject("MSXML2.XMLHTTP")
+http.Open "POST", "http://127.0.0.1:5001/api/step", False
+http.SetRequestHeader "Content-Type", "application/json"
+http.Send "{""x"":" & GetPlayerX() & ",""y"":" & GetPlayerY() & "}"
+action = ParseAction(http.ResponseText)
+Select Case action
+    Case "MOVE_N":  KeyPress "W", 1
+    Case "MOVE_S":  KeyPress "S", 1
+    ...</code></pre>
+ </details>
+ <details style="margin:8px 0">
+  <summary style="cursor:pointer;color:var(--ac)"><strong>AutoHotkey / JavaScript / curl</strong></summary>
+  <p>完整示例见 <a href="https://github.com/UNICORN-2887/-/tree/master/General_Generator/docs/API.md">API 文档</a></p>
+ </details>
+</section>
+
 <section id="example">
  <h2>完整示例: DeadMaze</h2>
  <p style="color:var(--dim);font-size:13px">运行此示例需要完整的 DeadMaze 项目文件（ZIP 中的 <code>game_controller.py</code> 和 <code>map_tracker.py</code>）。如果只是用框架，不需要这些。</p>
