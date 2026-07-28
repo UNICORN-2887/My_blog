@@ -408,11 +408,51 @@ flowchart TD
   <tr>
    <td><strong>OBSTrack</strong></td>
    <td><code>POST /api/track</code></td>
-   <td>OBS帧 + 当前位置 (x,y)</td>
+   <td>当前位置 (x,y)</td>
    <td>DeadMaze ORB hybrid: 帧间位移 + 地图ROI定锚</td>
    <td>真实游戏 OBS 采集</td>
   </tr>
  </table>
+
+ <h4>ServerTrack 原理（方案A）</h4>
+ <pre style="font-size:12px;line-height:1.8"><code>你的脚本                        NavigationServer
+   │                                │
+   │── POST /api/track_frame ──────→│   {x: 1000, y: 500}
+   │   {x: current_x, y: current_y} │
+   │                                │ 1. 从大地图切 640×360 视口
+   │                                │    (中心对准 current_x, current_y)
+   │                                │ 2. 加确定性噪底增强纹理
+   │                                │ 3. 相位相关: 当前渲染 vs 上一帧渲染
+   │                                │    → 检测到(-4.0, +4.0)半像素位移
+   │                                │ 4. 换算地图位移: (+8, -8)像素
+   │                                │ 5. 返回修正坐标
+   │←── {pos:[1008,492], conf:0.99} │
+   │                                │
+   原理: 服务端根据你发的位置渲染"期望看到的画面"，
+   跟上一帧比较计算出实际位移 → 绝对坐标修正。
+   无需OBS，适合脚本自动化和Demo验证。</code></pre>
+
+ <h4>OBSTrack 原理（方案B）</h4>
+ <pre style="font-size:12px;line-height:1.8"><code>你的脚本                        NavigationServer              OBS虚拟摄像头
+   │                                │                              │
+   │── POST /api/track ────────────→│                              │
+   │   {x: 1000, y: 500}            │                              │
+   │                                │ 1. 读摄像头最新帧 ←─────────│ OBS采集游戏画面
+   │                                │    self._cap.read()          │ (本地OpenCV直读)
+   │                                │ 2. ORB帧间位移: prev vs curr
+   │                                │    → 预测位置 (1008, 492)
+   │                                │ 3. 地图ROI ORB匹配定锚
+   │                                │    在±800px范围内搜索
+   │                                │    → 绝对坐标 (fx, fy)
+   │                                │    map_conf=0.55
+   │←── {pos:[fx,fy], conf:0.55}───│
+   │                                │
+   关键: OBS画面不通过HTTP传输！摄像头被服务端OpenCV直接读取。
+   你只发 {x,y} 作为先验位置——"我大概在这附近"，
+   服务端在附近±800px地图区域用ORB精确定位。
+
+   ⚠ OBS必须精确裁剪到纯游戏画面，帧像素与地图像素1:1。</code></pre>
+
  <div class="warn" style="margin:12px 0;background:var(--fg);border:1px solid #f59e0b;border-radius:8px;padding:16px">
   <strong>⚠️ OBSTrack 使用限制（重要）</strong>
   <p style="margin:8px 0 0">
